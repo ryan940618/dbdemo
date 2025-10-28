@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 
-class FoodItem extends StatefulWidget {
+class FoodItem extends StatelessWidget {
   final String name;
   final int price;
   final String image;
+  final bool isChecked;
+  final int quantity;
+  final ValueChanged<bool> onCheckChanged;
+  final ValueChanged<int> onQuantityChanged;
 
-  FoodItem({required this.name, required this.price, required this.image});
+  FoodItem({
+    required this.name,
+    required this.price,
+    required this.image,
+    required this.isChecked,
+    required this.quantity,
+    required this.onCheckChanged,
+    required this.onQuantityChanged,
+  });
 
-  @override
-  _FoodItemState createState() => _FoodItemState();
-}
-
-class _FoodItemState extends State<FoodItem> {
-  bool isChecked = false;
-  int quantity = 1;
-
-  void _showImageDialog() {
+  void _showImageDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        child: Image.asset(widget.image),
-      ),
+      builder: (_) => Dialog(child: Image.asset(image)),
     );
   }
 
@@ -30,35 +32,25 @@ class _FoodItemState extends State<FoodItem> {
       children: [
         Checkbox(
           value: isChecked,
-          onChanged: (value) {
-            setState(() {
-              isChecked = value!;
-            });
-          },
+          onChanged: (value) => onCheckChanged(value!),
         ),
-        SizedBox(width: 10),
-        Text(widget.name),
-        SizedBox(width: 10),
-        Text('\$${widget.price}'),
+        Expanded(child: Text(name)),
+        Text('\$$price'),
         SizedBox(width: 10),
         GestureDetector(
-          onTap: _showImageDialog,
-          child: Image.asset(widget.image, width: 50, height: 50),
+          onTap: () => _showImageDialog(context),
+          child: Image.asset(image, width: 50, height: 50),
         ),
         SizedBox(width: 10),
         DropdownButton<int>(
           value: quantity,
-          items: List.generate(10, (i) => i + 1)
+          onChanged: isChecked ? (v) => onQuantityChanged(v!) : null,
+          items: List.generate(10, (i) => i)
               .map((e) => DropdownMenuItem(
                     value: e,
                     child: Text('$e'),
                   ))
               .toList(),
-          onChanged: (value) {
-            setState(() {
-              quantity = value!;
-            });
-          },
         ),
       ],
     );
