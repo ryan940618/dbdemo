@@ -4,6 +4,7 @@ class MainMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('點餐系統')),
       body: Center(
         child: Wrap(
           spacing: 20,
