@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/food_item.dart';
+import 'checkout.dart';
 
 class OrderPage extends StatefulWidget {
   @override
@@ -8,6 +9,8 @@ class OrderPage extends StatefulWidget {
 
 class _OrderPageState extends State<OrderPage> {
   int selectedCategory = 0;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
   final List<String> categories = ['蛋餅', '鍋燒', '總匯'];
 
@@ -29,6 +32,51 @@ class _OrderPageState extends State<OrderPage> {
     ],
   };
 
+  Map<String, bool> selected = {};
+  Map<String, int> quantities = {};
+
+  double totalPrice = 0;
+
+  void initState() {
+    super.initState();
+    _initializeFoodStates();
+  }
+
+  void _initializeFoodStates() {
+    foodMenu.forEach((_, list) {
+      for (var food in list) {
+        selected[food['name']] = false;
+        quantities[food['name']] = 0;
+      }
+    });
+  }
+
+  void _updateTotalPrice() {
+    double sum = 0;
+    foodMenu.forEach((_, list) {
+      for (var food in list) {
+        if (selected[food['name']] == true) {
+          sum += food['price'] * (quantities[food['name']] ?? 0);
+        }
+      }
+    });
+    setState(() {
+      totalPrice = sum;
+    });
+  }
+
+  void _resetSelection() {
+    setState(() {
+      for (var key in selected.keys) {
+        selected[key] = false;
+      }
+      for (var key in quantities.keys) {
+        quantities[key] = 0;
+      }
+      totalPrice = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentCategory = categories[selectedCategory];
@@ -38,6 +86,29 @@ class _OrderPageState extends State<OrderPage> {
       appBar: AppBar(title: Text('點餐')),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: '姓名',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: '電話',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(categories.length, (index) {
@@ -77,12 +148,85 @@ class _OrderPageState extends State<OrderPage> {
               itemCount: foods.length,
               itemBuilder: (context, index) {
                 final food = foods[index];
+                final name = food['name'];
+                final isChecked = selected[name] ?? false;
+                final qty = quantities[name] ?? 0;
+
                 return FoodItem(
-                  name: food['name'],
+                  name: name,
                   price: food['price'],
                   image: food['image'],
+                  isChecked: isChecked,
+                  quantity: qty,
+                  onCheckChanged: (value) {
+                    setState(() {
+                      selected[name] = value;
+                      if (!value) quantities[name] = 0;
+                      _updateTotalPrice();
+                    });
+                  },
+                  onQuantityChanged: (value) {
+                    setState(() {
+                      quantities[name] = value;
+                      _updateTotalPrice();
+                    });
+                  },
                 );
               },
+            ),
+          ),
+
+          // 下方操作區
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Text('總金額：\$${totalPrice.toStringAsFixed(0)}',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _resetSelection,
+                      child: Text('取消'),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final name = nameController.text.trim();
+                        final phone = phoneController.text.trim();
+
+                        if (name.isEmpty || phone.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('請輸入姓名與電話')),
+                          );
+                          return;
+                        }
+
+                        final checkedFoods = foodMenu.entries
+                            .expand((e) => e.value)
+                            .where((f) => selected[f['name']] == true)
+                            .toList();
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CheckoutPage(
+                              name: name,
+                              foods: checkedFoods,
+                              quantities: quantities,
+                              totalPrice: totalPrice,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('結帳'),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
