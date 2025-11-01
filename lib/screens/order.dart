@@ -83,7 +83,7 @@ class _OrderPageState extends State<OrderPage> {
     final foods = foodMenu[currentCategory]!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('點餐')),
+      appBar: AppBar(title: const Text('點餐')),
       body: Column(
         children: [
           Padding(
@@ -113,7 +113,7 @@ class _OrderPageState extends State<OrderPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(categories.length, (index) {
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
                 width: 60,
                 height: 10,
                 decoration: BoxDecoration(
@@ -183,15 +183,14 @@ class _OrderPageState extends State<OrderPage> {
             child: Column(
               children: [
                 Text('總金額：\$${totalPrice.toStringAsFixed(0)}',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
                       onPressed: _resetSelection,
-                      child: Text('重設'),
+                      child: const Text('重設'),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -200,7 +199,7 @@ class _OrderPageState extends State<OrderPage> {
 
                         if (name.isEmpty || phone.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('請輸入姓名與電話')),
+                            const SnackBar(content: Text('請輸入姓名與電話')),
                           );
                           return;
                         }
@@ -222,7 +221,7 @@ class _OrderPageState extends State<OrderPage> {
                           ),
                         );
                       },
-                      child: Text('結帳'),
+                      child: const Text('結帳'),
                     ),
                   ],
                 ),
