@@ -32,6 +32,8 @@ class _OrderPageState extends State<OrderPage> {
     ],
   };
 
+  final List<MaterialColor> colors = [Colors.red, Colors.blue, Colors.green];
+
   Map<String, bool> selected = {};
   Map<String, int> quantities = {};
 
@@ -117,7 +119,7 @@ class _OrderPageState extends State<OrderPage> {
                 width: 60,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: selectedCategory == index ? Colors.green : Colors.grey,
+                  color: selectedCategory == index ? colors[index] : Colors.grey,
                   borderRadius: BorderRadius.circular(5),
                 ),
               );
@@ -130,7 +132,7 @@ class _OrderPageState extends State<OrderPage> {
               return ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: selectedCategory == index
-                      ? Colors.green
+                      ? colors[index]
                       : Colors.grey,
                   foregroundColor: Colors.white,
                 ),
@@ -199,7 +201,21 @@ class _OrderPageState extends State<OrderPage> {
 
                         if (name.isEmpty || phone.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('請輸入姓名與電話')),
+                            const SnackBar(content: Text('請輸入姓名與電話!')),
+                          );
+                          return;
+                        }
+                        
+                        if (phone.length != 10) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('手機號碼格式不正確!')),
+                          );
+                          return;
+                        }
+
+                        if (totalPrice.toInt() == 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('請先選購餐點!')),
                           );
                           return;
                         }
