@@ -113,7 +113,7 @@ class _OrderPageState extends State<OrderPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(categories.length, (index) {
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                margin: EdgeInsets.symmetric(horizontal: 28, vertical: 10),
                 width: 60,
                 height: 10,
                 decoration: BoxDecoration(
@@ -132,6 +132,7 @@ class _OrderPageState extends State<OrderPage> {
                   backgroundColor: selectedCategory == index
                       ? Colors.green
                       : Colors.grey,
+                  foregroundColor: Colors.white,
                 ),
                 onPressed: () {
                   setState(() {
@@ -190,8 +191,7 @@ class _OrderPageState extends State<OrderPage> {
                   children: [
                     ElevatedButton(
                       onPressed: _resetSelection,
-                      child: Text('取消'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                      child: Text('重設'),
                     ),
                     ElevatedButton(
                       onPressed: () {
