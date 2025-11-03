@@ -4,7 +4,7 @@ class CheckoutPage extends StatefulWidget {
   final String name;
   final List<Map<String, dynamic>> foods;
   final Map<String, int> quantities;
-  final double totalPrice;
+  double totalPrice;
 
   CheckoutPage({
     required this.name,
@@ -22,6 +22,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.totalPrice > 100){
+      widget.totalPrice  = widget.totalPrice * 0.9;
+    }
+
     if (orderSent) {
       return Scaffold(
         appBar: AppBar(title: Text('訂單已送出')),
@@ -68,6 +72,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
               return Text('$i. ${f['name']} [\$${f['price']}] x $qty = \$${total}');
             }),
             Divider(),
+            if (widget.totalPrice > 100) ...[
+              const Text(
+                '消費滿100元-9折優惠',
+                style: TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Divider(),
+            ],
             Text('總金額：\$${widget.totalPrice.toStringAsFixed(0)}',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
