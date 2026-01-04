@@ -233,6 +233,7 @@ class _OrderPageState extends State<OrderPage> {
                               foods: checkedFoods,
                               quantities: quantities,
                               totalPrice: totalPrice,
+                              phone: phone
                             ),
                           ),
                         );
