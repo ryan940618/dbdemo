@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
 class CheckoutPage extends StatefulWidget {
   final String name;
   final List<Map<String, dynamic>> foods;
@@ -51,15 +53,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
     }
 
-    final checkedFoods = widget.foods
-        .where((f) => widget.quantities[f['name']]! > 0)
-        .toList();
+      final checkedFoods = widget.foods
+          .where((f) => widget.quantities[f['name']]! > 0)
+          .toList();
 
-    final String orderString = checkedFoods.map((f) {
-      final name = f['name'];
-      final qty = widget.quantities[name] ?? 0;
-      return "$name*$qty";
-    }).join(", ");
+      int originalTotal = checkedFoods.fold(0, (previousValue, f) {
+        final qty = widget.quantities[f['name']] ?? 0;
+        final price = f['price'] as int;
+        return previousValue + (price * qty);
+      });
+
+      String itemsString = checkedFoods.map((f) {
+        final name = f['name'];
+        final price = f['price'];
+        final qty = widget.quantities[name] ?? 0;
+        final subTotal = price * qty;
+        
+        return "$name[\$$price]*$qty = \$$subTotal";
+      }).join(", ");
+
+      String orderString = itemsString;
+
+      if (originalTotal > 100) {
+        orderString += "，原始價格:\$$originalTotal，超過100打九折";
+      }
 
 
     final int totalQuantity = checkedFoods.fold(0, (previousValue, f) {
@@ -108,6 +125,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     setState(() {
                       orderSent = true;
                       sendPostRequest(orderString, totalQuantity);
+                      submitFirebase(widget.name, widget.phone, orderString, totalQuantity, widget.totalPrice);
                     });
                   },
                   child: Text('送出訂單'),
@@ -134,6 +152,48 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   } catch (e) {
     print('發生錯誤: $e');
+  }
+}
+
+Future<void> submitFirebase(String name,String phone, String orderString, int totalQuantity, double totalPrice) async {
+  
+  final DatabaseReference ref = FirebaseDatabase.instance.ref("orders");
+  
+  int indOrderCount = 1;
+
+  final DataSnapshot snapshot = await ref.get();
+
+  if (snapshot.exists) {
+    for (final child in snapshot.children) {
+      String key = child.key ?? "";
+       String searchPattern = "${name}_${phone}";
+      
+      if (key.contains(searchPattern)) {
+        indOrderCount++;
+      }
+    }
+  }
+
+  final DateTime now = DateTime.now();
+  
+  String dateTag = DateFormat('yyyyMMdd').format(now);
+  String timestamp = DateFormat('yyyyMMdd a hh:mm:ss').format(now);
+  String tag = "${name}_${phone}_${dateTag}_$indOrderCount";
+
+  Map<String, dynamic> orderData = {
+    'timestamp': timestamp,
+    'name': name,
+    'items': orderString,
+    'typeCount': totalQuantity,
+    'totalPrice': totalPrice.toStringAsFixed(0),
+    'phone': phone,
+  };
+
+  try {
+    await ref.child(tag).set(orderData);
+    print("上傳成功: $tag");
+  } catch (e) {
+    print("上傳失敗: $e");
   }
 }
 }
