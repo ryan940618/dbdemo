@@ -179,7 +179,6 @@ class _OrderPageState extends State<OrderPage> {
             ),
           ),
 
-          // 下方操作區
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
